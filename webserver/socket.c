@@ -1,4 +1,10 @@
-#include "serveur.h"
+#include "socket.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <arpa/inet.h>
+#include <poll.h>
+#include <errno.h>
 
 int creer_serveur(int port){
   int socket_server;
