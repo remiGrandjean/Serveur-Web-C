@@ -5,34 +5,23 @@
 #include <arpa/inet.h>
 #include <poll.h>
 #include <errno.h>
+#include <unistd.h>
+#include <ctype.h>
 
 int creer_serveur(int port){
   int socket_server;
-  int socket_client;
 
   struct sockaddr_in saddr;
   saddr.sin_family = AF_INET;
-  saddr.sin_port = htons(8000);
+  saddr.sin_port = htons(port);
   saddr.sin_addr.s_addr = INADDR_ANY;
  
   socket_server=socket(AF_INET,SOCK_STREAM,0);
-  socket_client=accept(socket_server,NULL,NULL);
-
- 
 
   if(socket_server==-1){
     perror("socket serveur");
     /*Traitement de l'erreur*/
   }
-  /*Utilisation de la socket */
-
-  if(socket_client==-1){
-    perror("accept");
-    /* Traitement de l'erreur*/
-  }
-  const char * message_bienvenue = "Bonjour , bienvenue sur mon serveur \n";
-  write (socket_client , message_bienvenue , strlen(message_bienvenue));
-
 
   if(bind(socket_server,(struct sockaddr *)&saddr, sizeof(saddr)) == -1){
     perror("bind socket_server");
@@ -44,5 +33,58 @@ int creer_serveur(int port){
     /*Traitement de l'erreur*/
   }
   
+  int socket_client; 
+  struct sockaddr_in caddr; 
+  socklen_t csize = sizeof(caddr);
+    
+  if((socket_client = accept(socket_server, (struct sockaddr *)&caddr, &csize)) < 0){    
+    perror("accept");
+    return errno;
+  }
+  char nom[20]; 
+    
+    
+  if(read(socket_client, &nom, sizeof(nom)) == -1)
+    {
+      perror("read nom");
+      return errno;
+    }
+    
+  printf("%s s'est connecte.\n", nom);
+    
+  char buffer[1024];    
+  int continuer = 0;
+  int i;
+  do
+    {
+      if(read(socket_client, buffer, sizeof(buffer)) == -1)
+        {
+	  perror("read");
+	  return errno;
+        }
+     
+      if(strcmp(buffer, "exit") == 0){
+	continuer = 1;
+      }else{
+	for(i=0; i<(int)strlen(buffer); i++){
+	  if(isalpha(buffer[i]) ){   
+	  } else if(!isspace(buffer[i])&& !isdigit(buffer[i])){
+	      buffer[i]='\0';
+	      break;
+	    }	  
+	    }
+	  printf("\033[40;31m");
+	  printf("%s: %s\n", nom, buffer);
+	    
+	} 	    
+      }while(continuer == 0);    
+       
+      printf("%s s'est deconnecte.\n", nom);   
+	close(socket_server);
+
+  return 0; 
+
+  
   
 }
+
