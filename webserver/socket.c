@@ -41,9 +41,12 @@ int creer_serveur(int port){
     perror("accept");
     return errno;
   }
+
+   const char *message = "Bienvenue sur le serveur web TomCinq\n";
+   write(socket_client, message,strlen(message)); 
+   sleep(1000);
+  
   char nom[20]; 
-    
-    
   if(read(socket_client, &nom, sizeof(nom)) == -1)
     {
       perror("read nom");
@@ -51,36 +54,33 @@ int creer_serveur(int port){
     }
     
   printf("%s s'est connecte.\n", nom);
+ 
     
   char buffer[1024];    
   int continuer = 0;
-  int i;
+  ssize_t size;
   do
     {
-      if(read(socket_client, buffer, sizeof(buffer)) == -1)
+      size=read(socket_client, buffer, sizeof(buffer));
+      if(size == -1)
         {
 	  perror("read");
 	  return errno;
         }
-     
+      
       if(strcmp(buffer, "exit") == 0){
 	continuer = 1;
       }else{
-	for(i=0; i<(int)strlen(buffer); i++){
-	  if(isalpha(buffer[i]) ){   
-	  } else if(!isspace(buffer[i])&& !isdigit(buffer[i])){
-	      buffer[i]='\0';
-	      break;
-	    }	  
-	    }
-	  printf("\033[40;31m");
-	  printf("%s: %s\n", nom, buffer);
+	buffer[size+1]='\0';
+	 
+	printf("\033[40;31m");
+	printf("%s   %s\n", nom, buffer);
 	    
-	} 	    
-      }while(continuer == 0);    
+      } 	    
+    }while(continuer == 0);    
        
-      printf("%s s'est deconnecte.\n", nom);   
-	close(socket_server);
+  printf("%s s'est deconnecte.\n", nom);   
+  close(socket_server);
 
   return 0; 
 

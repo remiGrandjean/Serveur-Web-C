@@ -1,0 +1,16 @@
+Question 1 
+
+Le message "bind socket_server: Adress already in use" s'affiche.
+
+Question 2 
+
+Il ne se passe rien.
+
+Question 3
+
+La connexion est refusée car on essaye de se connecter à l'adresse IPv6 de localhost.
+
+Question 4 
+
+La connexion s'effectue que sur un seul client car le serveur ne peut lire les message que d'un seul client en même temps.
+
