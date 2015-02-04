@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <signal.h>
 
 int creer_serveur(int port){
   int socket_server;
@@ -18,6 +19,8 @@ int creer_serveur(int port){
  
   socket_server=socket(AF_INET,SOCK_STREAM,0);
 
+  initialiser_signaux();
+
   if(socket_server==-1){
     perror("socket serveur");
     /*Traitement de l'erreur*/
@@ -25,9 +28,6 @@ int creer_serveur(int port){
   if(setsockopt( socket_server , SOL_SOCKET , SO_REUSEADDR ,&option , sizeof(int))==-1){
     perror("Can not set SO_REUSEADDR option");
   }
-
-
-    
 
   if(bind(socket_server,(struct sockaddr *)&saddr, sizeof(saddr)) == -1){
     perror("bind socket_server");
@@ -93,5 +93,15 @@ int creer_serveur(int port){
 
   
   
+}
+
+void initialiser_signaux(void){
+
+
+  if(signal(SIGPIPE,SIG_IGN)==SIG_ERR)
+    {
+      perror("signal");
+    }
+
 }
 
