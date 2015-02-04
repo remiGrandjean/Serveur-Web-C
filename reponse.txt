@@ -4,7 +4,7 @@ Le message "bind socket_server: Adress already in use" s'affiche.
 
 Question 2 
 
-Quand on execute la commande, le client se ferme.
+Quand on execute la commande, le client se ferme donc le serveur plante quand il envoie des données.
 
 Question 3
 
