@@ -43,8 +43,9 @@ int creer_serveur(int port){
   }
 
    const char *message = "Bienvenue sur le serveur web TomCinq\n";
+   sleep(1);
    write(socket_client, message,strlen(message)); 
-   sleep(1000);
+   
   
   char nom[20]; 
   if(read(socket_client, &nom, sizeof(nom)) == -1)
