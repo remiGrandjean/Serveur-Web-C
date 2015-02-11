@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <signal.h>
+#include <sys/wait.h>
 
 int creer_serveur(int port){
   int socket_server;
@@ -19,7 +20,7 @@ int creer_serveur(int port){
  
   socket_server=socket(AF_INET,SOCK_STREAM,0);
 
-  initialiser_signaux();
+ 
 
   if(socket_server==-1){
     perror("socket serveur");
@@ -46,6 +47,9 @@ int creer_serveur(int port){
   ssize_t size;
   int pid;
   const char *message = "Bienvenue sur le serveur web TomCinq\n";
+  int status;
+
+   initialiser_signaux();
  
   while(1){
     if((socket_client = accept(socket_server, (struct sockaddr *)&caddr, &csize)) < 0){    
@@ -55,7 +59,7 @@ int creer_serveur(int port){
     if((pid=fork())==-1){
       perror("fork");
     }
-    
+  
     if(pid==0){
       write(socket_client, message,strlen(message));
     while(1)
@@ -78,6 +82,7 @@ int creer_serveur(int port){
 	}     
       
       }
+    waitpid(pid,&status,0);
     close(socket_client);
     }   
      
@@ -90,10 +95,22 @@ int creer_serveur(int port){
   
   }
 
-  void initialiser_signaux(void){
-    if(signal(SIGPIPE,SIG_IGN)==SIG_ERR)
-      {
-	perror("signal");
-      }
+void traitement_signal(int sig){
+
+  printf("Signal %d recu\n",sig);
+}
+void initialiser_signaux(void){
+  struct sigaction sa;
+  sa.sa_handler = traitement_signal;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_flags=SA_RESTART;
+  if(sigaction(SIGCHLD, &sa, NULL)==-1)
+    {
+      perror("sigaction(SIGCHLD)");
+    }
+  if(signal(SIGPIPE,SIG_IGN)==SIG_ERR)
+    {
+      perror("signal");
+    }
 
   }
