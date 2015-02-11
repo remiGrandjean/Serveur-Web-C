@@ -22,7 +22,6 @@ int main(void){
   while(socket_serveur!=-1){
     int socket_client ;
     socket_client = accept(socket_serveur , NULL , NULL);
-  
     if (socket_client == -1)
       {
 	perror("accept");
