@@ -1,3 +1,5 @@
+3.2.1
+
 Question 1 
 
 Le message "bind socket_server: Adress already in use" s'affiche.
@@ -14,3 +16,12 @@ Question 4
 
 La connexion s'effectue que sur un seul client car le serveur ne peut lire les message que d'un seul client en même temps.
 
+5.2.1
+
+Question 3 
+
+curl : (7) couldn't connect to host
+
+Question 4
+
+Il y a la commande (GET,POST...), l'URL et la version du protocole. 

@@ -44,12 +44,12 @@ int creer_serveur(int port){
   struct sockaddr_in caddr; 
   socklen_t csize = sizeof(caddr);   
   char buffer[1024];    
-  ssize_t size;
   int pid;
   const char *message = "Bienvenue sur le serveur web TomCinq\n";
   int status;
+  FILE *f;
 
-   initialiser_signaux();
+  initialiser_signaux();
  
   while(1){
     if((socket_client = accept(socket_server, (struct sockaddr *)&caddr, &csize)) < 0){    
@@ -59,58 +59,53 @@ int creer_serveur(int port){
     if((pid=fork())==-1){
       perror("fork");
     }
-  
+    f=fdopen(socket_client,"w+");
+    if(f==NULL){
+      perror("fdopen");
+      return errno;
+    }
+   
     if(pid==0){
-      write(socket_client, message,strlen(message));
-    while(1)
-      {  
-	
-	size=read(socket_client, buffer, sizeof(buffer));
-	if(size == -1)
-	  {
-	    perror("read");
+      fwrite(message,1,strlen(message),f);
+      while(1)
+	{  
+  
+	  if(fgets(buffer,sizeof(buffer),f)==NULL){
+	    perror("fgets");
 	    return errno;
-	  }
-    
-	if(strncmp(buffer, "exit\r\n",size) == 0){
-	  printf("deconnection.\n");
-	  close(socket_server);
-	  exit(0);
-	}else{
-	  buffer[size+1]='\0';
-	  write(socket_client,buffer,strlen(buffer));
-	}     
-      
-      }
-    waitpid(pid,&status,0);
-    close(socket_client);
-    }   
-     
+	   }
+	  if(strncmp(buffer, "exit\r\n",strlen(buffer)) == 0){
+	    printf("deconnection.\n");
+	    close(socket_server);
+	    exit(0);
+	  }else{
+	    fprintf(f,"<TomCinq> %s ",buffer);
+	    // fwrite(buffer,1,strlen(buffer),f);	    
+	  }	 
+	}   
     }  
-      
-    
+    waitpid(pid,&status,0);
+    fclose(f);
+    close(socket_client);    
     return 0; 
-
-  
-  
   }
-
-void traitement_signal(int sig){
-
-  printf("Signal %d recu\n",sig);
 }
-void initialiser_signaux(void){
-  struct sigaction sa;
-  sa.sa_handler = traitement_signal;
-  sigemptyset(&sa.sa_mask);
-  sa.sa_flags=SA_RESTART;
-  if(sigaction(SIGCHLD, &sa, NULL)==-1)
-    {
-      perror("sigaction(SIGCHLD)");
-    }
-  if(signal(SIGPIPE,SIG_IGN)==SIG_ERR)
-    {
-      perror("signal");
-    }
+   void traitement_signal(int sig){
 
-  }
+     printf("Signal %d recu\n",sig);
+   }
+   void initialiser_signaux(void){
+     struct sigaction sa;
+     sa.sa_handler = traitement_signal;
+     sigemptyset(&sa.sa_mask);
+     sa.sa_flags=SA_RESTART;
+     if(sigaction(SIGCHLD, &sa, NULL)==-1)
+       {
+	 perror("sigaction(SIGCHLD)");
+       }
+     if(signal(SIGPIPE,SIG_IGN)==SIG_ERR)
+       {
+	 perror("signal");
+       }
+
+   }
